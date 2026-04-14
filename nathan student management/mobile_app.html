@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2e7d32">
+    <title>Student Management Mobile</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .app {
+            max-width: 480px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #2e7d32, #4caf50);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .logout-btn {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* Navigation */
+        .nav {
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .nav-tabs {
+            display: flex;
+            padding: 0 10px;
+        }
+
+        .nav-tab {
+            padding: 15px 20px;
+            border: none;
+            background: transparent;
+            color: #666;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .nav-tab.active {
+            color: #2e7d32;
+            border-bottom-color: #2e7d32;
+            font-weight: bold;
+        }
+
+        /* Content */
+        .content {
+            padding: 20px;
+            min-height: calc(100vh - 140px);
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid #2e7d32;
+        }
+
+        .card h3 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .card p {
+            margin-bottom: 8px;
+            color: #666;
+        }
+
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-weight: bold;
+        }
+
+        .stat-value {
+            color: #2e7d32;
+        }
+
+        /* Buttons */
+        .btn {
+            background: #2e7d32;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            width: 100%;
+            margin-bottom: 10px;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #1b5e20;
+        }
+
+        .btn-secondary {
+            background: #666;
+        }
+
+        .btn-secondary:hover {
+            background: #555;
+        }
+
+        .btn-danger {
+            background: #d32f2f;
+        }
+
+        .btn-danger:hover {
+            background: #b71c1c;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Lists */
+        .list-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #2e7d32;
+        }
+
+        .list-item.unread {
+            background: #e8f5e8;
+            border-left-color: #4caf50;
+        }
+
+        .list-item h4 {
+            margin-bottom: 5px;
+            color: #2e7d32;
+        }
+
+        .list-item p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .list-item .meta {
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #2e7d32;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Login Screen */
+        .login-screen {
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .login-form {
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .login-form h2 {
+            margin-bottom: 30px;
+            color: #2e7d32;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .nav-tabs {
+                padding: 0 5px;
+            }
+
+            .nav-tab {
+                padding: 12px 15px;
+                font-size: 0.8rem;
+            }
+
+            .content {
+                padding: 15px;
+            }
+
+            .card {
+                padding: 15px;
+            }
+        }
+
+        /* Status indicators */
+        .status-present { color: #4caf50; }
+        .status-absent { color: #f44336; }
+        .status-late { color: #ff9800; }
+        .status-paid { color: #4caf50; }
+        .status-pending { color: #ff9800; }
+        .status-overdue { color: #f44336; }
+
+        /* Priority indicators */
+        .priority-high { border-left-color: #ff9800; }
+        .priority-urgent { border-left-color: #f44336; }
+    </style>
+</head>
+<body>
+    <div class="app" id="app">
+        <!-- Login Screen -->
+        <div id="login-screen" class="screen active">
+            <div class="login-screen">
+                <h2>📚 Student Management</h2>
+                <form class="login-form" id="login-form">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" required>
+                    </div>
+                    <button type="submit" class="btn">Login</button>
+                </form>
+                <div id="login-error" style="color: #f44336; margin-top: 20px; display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Main App -->
+        <div id="main-app" class="screen">
+            <!-- Header -->
+            <div class="header">
+                <h1>Student Management</h1>
+                <p id="user-info">Welcome!</p>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+
+            <!-- Navigation -->
+            <div class="nav">
+                <div class="nav-tabs">
+                    <button class="nav-tab active" data-screen="dashboard">Dashboard</button>
+                    <button class="nav-tab" data-screen="children">Children</button>
+                    <button class="nav-tab" data-screen="grades">Grades</button>
+                    <button class="nav-tab" data-screen="payments">Payments</button>
+                    <button class="nav-tab" data-screen="attendance">Attendance</button>
+                    <button class="nav-tab" data-screen="notifications">Notifications</button>
+                    <button class="nav-tab" data-screen="messages">Messages</button>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="content">
+                <!-- Dashboard -->
+                <div id="dashboard" class="screen active">
+                    <h2 style="margin-bottom: 20px; color: #2e7d32;">🏠 Dashboard</h2>
+                    <div id="dashboard-content">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Loading dashboard...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Children -->
+                <div id="children" class="screen">
+                    <h2 style="margin-bottom: 20px; color: #2e7d32;">👨‍👩‍👧‍👦 My Children</h2>
+                    <div id="children-content">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Loading children...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grades -->
+                <div id="grades" class="screen">
+                    <h2 style="margin-bottom: 20px; color: #2e7d32;">📊 Academic Progress</h2>
+                    <div id="grades-content">
+                        <p>Select a child from the Children tab to view their grades.</p>
+                    </div>
+                </div>
+
+                <!-- Payments -->
+                <div id="payments" class="screen">
+                    <h2 style="margin-bottom: 20px; color: #2e7d32;">💰 Payment Status</h2>
+                    <div id="payments-content">
+                        <p>Select a child from the Children tab to view their payments.</p>
+                    </div>
+                </div>
+
+                <!-- Attendance -->
+                <div id="attendance" class="screen">
+                    <h2 style="margin-bottom: 20px; color: #2e7d32;">📅 Attendance Records</h2>
+                    <div id="attendance-content">
+                        <p>Select a child from the Children tab to view their attendance.</p>
+                    </div>
+                </div>
+
+                <!-- Notifications -->
+                <div id="notifications" class="screen">
+                    <h2 style="margin-bottom: 20px; color: #2e7d32;">🔔 Notifications</h2>
+                    <div id="notifications-content">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Loading notifications...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages -->
+                <div id="messages" class="screen">
+                    <h2 style="margin-bottom: 20px; color: #2e7d32;">💬 Messages</h2>
+                    <button class="btn" onclick="showComposeMessage()" style="margin-bottom: 20px;">Compose Message</button>
+                    <div id="messages-content">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Loading messages...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Compose Message Modal -->
+                <div id="compose-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 10px; width: 90%; max-width: 400px;">
+                        <h3 style="margin-bottom: 20px; color: #2e7d32;">📝 Compose Message</h3>
+                        <form id="compose-form">
+                            <div class="form-group">
+                                <label for="msg-subject">Subject</label>
+                                <input type="text" id="msg-subject" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="msg-type">Type</label>
+                                <select id="msg-type">
+                                    <option value="general">General</option>
+                                    <option value="complaint">Complaint</option>
+                                    <option value="inquiry">Inquiry</option>
+                                    <option value="praise">Praise</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="msg-priority">Priority</label>
+                                <select id="msg-priority">
+                                    <option value="normal">Normal</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="msg-content">Message</label>
+                                <textarea id="msg-content" required></textarea>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button type="button" class="btn btn-secondary" onclick="hideComposeMessage()" style="flex: 1;">Cancel</button>
+                                <button type="submit" class="btn" style="flex: 1;">Send</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_BASE = 'http://localhost:5000/api';
+        let authToken = localStorage.getItem('authToken');
+        let currentUser = null;
+        let selectedChild = null;
+
+        // DOM Elements
+        const app = document.getElementById('app');
+        const loginScreen = document.getElementById('login-screen');
+        const mainApp = document.getElementById('main-app');
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            if (authToken) {
+                showMainApp();
+                loadDashboard();
+            } else {
+                showLoginScreen();
+            }
+
+            // Navigation
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const screenId = this.getAttribute('data-screen');
+                    showScreen(screenId);
+                });
+            });
+        });
+
+        // Authentication
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    authToken = data.token;
+                    currentUser = data.user;
+                    localStorage.setItem('authToken', authToken);
+                    showMainApp();
+                    loadDashboard();
+                } else {
+                    showLoginError(data.error || 'Login failed');
+                }
+            } catch (error) {
+                showLoginError('Network error. Please check your connection.');
+            }
+        });
+
+        function showLoginError(message) {
+            const errorDiv = document.getElementById('login-error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function showLoginScreen() {
+            loginScreen.classList.add('active');
+            mainApp.classList.remove('active');
+        }
+
+        function showMainApp() {
+            loginScreen.classList.remove('active');
+            mainApp.classList.add('active');
+            document.getElementById('user-info').textContent = `Welcome, ${currentUser?.username || 'User'}!`;
+        }
+
+        function logout() {
+            authToken = null;
+            currentUser = null;
+            localStorage.removeItem('authToken');
+            showLoginScreen();
+        }
+
+        // Navigation
+        function showScreen(screenId) {
+            // Update active tab
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`[data-screen="${screenId}"]`).classList.add('active');
+
+            // Show screen
+            document.querySelectorAll('.content .screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+
+            // Load screen data
+            switch(screenId) {
+                case 'dashboard':
+                    loadDashboard();
+                    break;
+                case 'children':
+                    loadChildren();
+                    break;
+                case 'grades':
+                    loadGrades();
+                    break;
+                case 'payments':
+                    loadPayments();
+                    break;
+                case 'attendance':
+                    loadAttendance();
+                    break;
+                case 'notifications':
+                    loadNotifications();
+                    break;
+                case 'messages':
+                    loadMessages();
+                    break;
+            }
+        }
+
+        // API Helper
+        async function apiRequest(endpoint, options = {}) {
+            const defaultOptions = {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json'
+                }
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, { ...defaultOptions, ...options });
+                const data = await response.json();
+
+                if (response.status === 401) {
+                    logout();
+                    return null;
+                }
+
+                return { response, data };
+            } catch (error) {
+                console.error('API request failed:', error);
+                return null;
+            }
+        }
+
+        // Dashboard
+        async function loadDashboard() {
+            const content = document.getElementById('dashboard-content');
+            content.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading dashboard...</p></div>';
+
+            const result = await apiRequest('/parent/dashboard');
+            if (!result || !result.response.ok) {
+                content.innerHTML = '<p>Error loading dashboard. Please try again.</p>';
+                return;
+            }
+
+            const children = result.data.children;
+            let html = '';
+
+            if (children.length === 0) {
+                html = '<p>No children linked to your account. Please contact the administrator.</p>';
+            } else {
+                children.forEach(child => {
+                    html += `
+                        <div class="card">
+                            <h3>${child.name}</h3>
+                            <p><strong>Program:</strong> ${child.program}</p>
+                            <div class="stat">
+                                <span class="stat-label">GPA:</span>
+                                <span class="stat-value">${child.gpa}</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Attendance:</span>
+                                <span class="stat-value">${child.attendance_rate}%</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Payments:</span>
+                                <span class="stat-value">${child.payment_completion}%</span>
+                            </div>
+                            <button class="btn" onclick="selectChild('${child.student_id}', '${child.name}')">View Details</button>
+                        </div>
+                    `;
+                });
+            }
+
+            content.innerHTML = html;
+        }
+
+        // Children
+        async function loadChildren() {
+            const content = document.getElementById('children-content');
+            content.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading children...</p></div>';
+
+            const result = await apiRequest('/parent/dashboard');
+            if (!result || !result.response.ok) {
+                content.innerHTML = '<p>Error loading children. Please try again.</p>';
+                return;
+            }
+
+            const children = result.data.children;
+            let html = '';
+
+            if (children.length === 0) {
+                html = '<p>No children linked to your account. Please contact the administrator.</p>';
+            } else {
+                children.forEach(child => {
+                    html += `
+                        <div class="card">
+                            <h3>${child.name}</h3>
+                            <p><strong>Student ID:</strong> ${child.student_id}</p>
+                            <p><strong>Program:</strong> ${child.program}</p>
+                            <p><strong>Enrolled:</strong> ${child.enrollment_date}</p>
+                            <button class="btn" onclick="selectChild('${child.student_id}', '${child.name}')">Select Child</button>
+                        </div>
+                    `;
+                });
+            }
+
+            content.innerHTML = html;
+        }
+
+        function selectChild(studentId, name) {
+            selectedChild = { id: studentId, name: name };
+            showScreen('grades'); // Switch to grades tab
+            loadGrades();
+        }
+
+        // Grades
+        async function loadGrades() {
+            if (!selectedChild) {
+                document.getElementById('grades-content').innerHTML = '<p>Please select a child from the Children tab first.</p>';
+                return;
+            }
+
+            const content = document.getElementById('grades-content');
+            content.innerHTML = `<div class="loading"><div class="spinner"></div><p>Loading grades for ${selectedChild.name}...</p></div>`;
+
+            const result = await apiRequest(`/parent/grades/${selectedChild.id}`);
+            if (!result || !result.response.ok) {
+                content.innerHTML = '<p>Error loading grades. Please try again.</p>';
+                return;
+            }
+
+            const data = result.data;
+            let html = `<h3 style="color: #2e7d32; margin-bottom: 15px;">${selectedChild.name} - GPA: ${data.gpa}</h3>`;
+
+            if (data.grades.length === 0) {
+                html += '<p>No grades available yet.</p>';
+            } else {
+                data.grades.forEach(grade => {
+                    html += `
+                        <div class="list-item">
+                            <h4>${grade.subject}</h4>
+                            <p><strong>Marks:</strong> ${grade.marks} | <strong>Grade:</strong> ${grade.grade} | <strong>Credits:</strong> ${grade.credits}</p>
+                            <div class="meta">Semester: ${grade.semester}</div>
+                        </div>
+                    `;
+                });
+            }
+
+            content.innerHTML = html;
+        }
+
+        // Payments
+        async function loadPayments() {
+            if (!selectedChild) {
+                document.getElementById('payments-content').innerHTML = '<p>Please select a child from the Children tab first.</p>';
+                return;
+            }
+
+            const content = document.getElementById('payments-content');
+            content.innerHTML = `<div class="loading"><div class="spinner"></div><p>Loading payments for ${selectedChild.name}...</p></div>`;
+
+            const result = await apiRequest(`/parent/payments/${selectedChild.id}`);
+            if (!result || !result.response.ok) {
+                content.innerHTML = '<p>Error loading payments. Please try again.</p>';
+                return;
+            }
+
+            const data = result.data;
+            let html = `<h3 style="color: #2e7d32; margin-bottom: 15px;">${selectedChild.name} - Payment Status</h3>`;
+            html += `<p><strong>Total Paid:</strong> $${data.total_paid.toFixed(2)} | <strong>Outstanding:</strong> $${data.total_due.toFixed(2)}</p><br>`;
+
+            if (data.payments.length === 0) {
+                html += '<p>No payment records available.</p>';
+            } else {
+                data.payments.forEach(payment => {
+                    const statusClass = payment.status.toLowerCase();
+                    html += `
+                        <div class="list-item">
+                            <h4>${payment.category}</h4>
+                            <p><strong>Amount:</strong> $${payment.amount.toFixed(2)} | <strong>Status:</strong> <span class="status-${statusClass}">${payment.status}</span></p>
+                            <div class="meta">Due: ${payment.due_date || 'N/A'} | Paid: ${payment.payment_date || 'N/A'}</div>
+                        </div>
+                    `;
+                });
+            }
+
+            content.innerHTML = html;
+        }
+
+        // Attendance
+        async function loadAttendance() {
+            if (!selectedChild) {
+                document.getElementById('attendance-content').innerHTML = '<p>Please select a child from the Children tab first.</p>';
+                return;
+            }
+
+            const content = document.getElementById('attendance-content');
+            content.innerHTML = `<div class="loading"><div class="spinner"></div><p>Loading attendance for ${selectedChild.name}...</p></div>`;
+
+            const result = await apiRequest(`/parent/attendance/${selectedChild.id}`);
+            if (!result || !result.response.ok) {
+                content.innerHTML = '<p>Error loading attendance. Please try again.</p>';
+                return;
+            }
+
+            const data = result.data;
+            let html = `<h3 style="color: #2e7d32; margin-bottom: 15px;">${selectedChild.name} - Attendance: ${data.attendance_rate}% (${data.present_days}/${data.total_days} days)</h3>`;
+
+            if (data.records.length === 0) {
+                html += '<p>No attendance records available.</p>';
+            } else {
+                data.records.forEach(record => {
+                    const statusClass = record.status.toLowerCase();
+                    html += `
+                        <div class="list-item">
+                            <h4>${record.date}</h4>
+                            <p><strong>Status:</strong> <span class="status-${statusClass}">${record.status}</span></p>
+                            ${record.remarks ? `<div class="meta">Remarks: ${record.remarks}</div>` : ''}
+                        </div>
+                    `;
+                });
+            }
+
+            content.innerHTML = html;
+        }
+
+        // Notifications
+        async function loadNotifications() {
+            const content = document.getElementById('notifications-content');
+            content.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading notifications...</p></div>';
+
+            const result = await apiRequest('/parent/notifications');
+            if (!result || !result.response.ok) {
+                content.innerHTML = '<p>Error loading notifications. Please try again.</p>';
+                return;
+            }
+
+            const data = result.data;
+            let html = `<h3 style="color: #2e7d32; margin-bottom: 15px;">Notifications (${data.unread_count} unread)</h3>`;
+
+            if (data.notifications.length === 0) {
+                html += '<p>No notifications available.</p>';
+            } else {
+                data.notifications.forEach(notif => {
+                    const unreadClass = notif.is_read ? '' : 'unread';
+                    const priorityClass = notif.priority === 'high' ? 'priority-high' : notif.priority === 'urgent' ? 'priority-urgent' : '';
+                    html += `
+                        <div class="list-item ${unreadClass} ${priorityClass}">
+                            <h4>${notif.title}</h4>
+                            <p>${notif.message}</p>
+                            <div class="meta">Type: ${notif.type} | Priority: ${notif.priority} | ${notif.created_at}</div>
+                        </div>
+                    `;
+                });
+            }
+
+            content.innerHTML = html;
+        }
+
+        // Messages
+        async function loadMessages() {
+            const content = document.getElementById('messages-content');
+            content.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading messages...</p></div>';
+
+            const result = await apiRequest('/parent/messages');
+            if (!result || !result.response.ok) {
+                content.innerHTML = '<p>Error loading messages. Please try again.</p>';
+                return;
+            }
+
+            const messages = result.data.messages;
+            let html = '';
+
+            if (messages.length === 0) {
+                html = '<p>No messages available.</p>';
+            } else {
+                messages.forEach(msg => {
+                    html += `
+                        <div class="list-item">
+                            <h4>${msg.subject}</h4>
+                            <p><strong>From:</strong> ${msg.from_user} | <strong>Type:</strong> ${msg.message_type} | <strong>Status:</strong> ${msg.status}</p>
+                            <div class="meta">${msg.created_at}</div>
+                            ${msg.admin_response ? `<div style="margin-top: 10px; padding: 10px; background: #e8f5e8; border-radius: 5px;"><strong>Admin Response:</strong><br>${msg.admin_response}</div>` : ''}
+                        </div>
+                    `;
+                });
+            }
+
+            content.innerHTML = html;
+        }
+
+        // Compose Message
+        function showComposeMessage() {
+            document.getElementById('compose-modal').style.display = 'block';
+        }
+
+        function hideComposeMessage() {
+            document.getElementById('compose-modal').style.display = 'none';
+            document.getElementById('compose-form').reset();
+        }
+
+        document.getElementById('compose-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const subject = document.getElementById('msg-subject').value;
+            const message = document.getElementById('msg-content').value;
+            const messageType = document.getElementById('msg-type').value;
+            const priority = document.getElementById('msg-priority').value;
+
+            const result = await apiRequest('/parent/send-message', {
+                method: 'POST',
+                body: JSON.stringify({
+                    subject,
+                    message,
+                    message_type: messageType,
+                    priority
+                })
+            });
+
+            if (result && result.response.ok) {
+                alert('Message sent successfully!');
+                hideComposeMessage();
+                loadMessages(); // Refresh messages
+            } else {
+                alert('Error sending message. Please try again.');
+            }
+        });
+
+        // Service Worker for PWA (Progressive Web App)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registration successful');
+                    })
+                    .catch(function(err) {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>

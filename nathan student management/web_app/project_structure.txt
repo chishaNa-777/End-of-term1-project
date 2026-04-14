@@ -1,0 +1,38 @@
+student_management_web/
+├── backend/
+│   ├── app/
+│   │   ├── __init__.py
+│   │   ├── models.py
+│   │   ├── routes/
+│   │   │   ├── __init__.py
+│   │   │   ├── auth.py
+│   │   │   ├── students.py
+│   │   │   ├── subjects.py
+│   │   │   ├── attendance.py
+│   │   │   ├── tutorials.py
+│   │   │   └── analytics.py
+│   │   ├── utils/
+│   │   │   ├── __init__.py
+│   │   │   ├── database.py
+│   │   │   ├── auth.py
+│   │   │   └── file_upload.py
+│   │   └── config.py
+│   ├── migrations/
+│   ├── requirements.txt
+│   ├── run.py
+│   └── README.md
+├── frontend/
+│   ├── public/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   ├── utils/
+│   │   └── App.js
+│   ├── package.json
+│   └── README.md
+├── docker/
+│   ├── Dockerfile.backend
+│   ├── Dockerfile.frontend
+│   └── docker-compose.yml
+└── README.md
